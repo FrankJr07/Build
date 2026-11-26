@@ -1,0 +1,29 @@
+name: Build APK
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Arrange files
+        run: |
+          mkdir -p src/com/ansub/tvhome res/xml res/drawable res/drawable-anydpi-v26
+          mv -f ./*.java src/com/ansub/tvhome/
+          mv -f home_button.xml res/xml/
+          mv -f banner.xml icon.xml icon_background.xml icon_foreground.xml res/drawable/
+          mv -f icon_v26.xml res/drawable-anydpi-v26/icon.xml
+      - name: Android SDK packages
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-34" "build-tools;34.0.0" >/dev/null
+      - name: Build
+        run: sh build.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tvhome-apk
+          path: out/tvhome.apk
